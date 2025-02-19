@@ -18,12 +18,12 @@ type Step = {
 
 const steps: Step[] = [
   {
-    question: "What is your brand name?",
+    question: "Welcome. We will be creating your MVNO Site .To Start Please Tell Your Brand Name",
     property: "brandName",
     instructions: "Extract only the name of the brand.",
   },
   {
-    question: "Describe your brand in a few sentences.",
+    question: "Tell us a bit about your brand.",
     property: "description",
     instructions: "Extract the brand description.",
   },
@@ -197,9 +197,9 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     }
   };
 
-  useEffect(()=>{
-    submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
-  },[])
+  // useEffect(()=>{
+  //   submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
+  // },[])
   const submitToAPI = async (brandName: string, description: string): Promise<void> => {
     const data = {
       brandName: brandName,
@@ -342,7 +342,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
               className=" mt-10 border-white border px-2 py-1 text-white"
             >
               {" "}
-              Let's Start the conversation
+              Let's start the conversation
             </button>
           </div>
         ) : (
