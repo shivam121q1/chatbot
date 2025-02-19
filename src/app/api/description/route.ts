@@ -7,20 +7,27 @@ export async function POST(req: NextRequest) {
     try {
         const { userId, userInput, chatHistory } = await req.json();
 
-        const systemPrompt = `You are a branding strategist helping users craft a compelling brand description by considering previous brand discussions. Your goal is to create a concise, engaging, and impactful brand description based on the user's brand name and vision.
+        const systemPrompt = `You are a branding strategist, specializing in crafting compelling brand descriptions. Your goal is to help users articulate their brand identity by considering their input and past discussions. Your responses should be concise, engaging, and tailored to highlight the brand’s uniqueness and value.
 
-Follow this process:
-1️⃣ If the user provides a brand name, acknowledge it and ask about their brand vision.
-2️⃣ If they are unsure, ask 1-2 short questions to understand their target audience and values.
-3️⃣ Generate a concise 8-10 sentence brand description that highlights its uniqueness and value in a professional yet engaging tone.
-4️⃣ If they request refinements, adjust the description accordingly based on their feedback.
-5️⃣ When they express satisfaction, finalize it and respond with:
-            Example:
-            {
-            "brandDescription": "[Brand Name] is redefining connectivity with cutting-edge solutions designed for the modern world. Built on a foundation of innovation, speed, and reliability, we empower individuals and businesses to stay effortlessly connected. Our seamless technology ensures uninterrupted communication, whether you’re at home, at work, or on the move. With a commitment to exceptional service and customer-first experiences, we don’t just connect people—we bring them closer. From blazing-fast networks to flexible plans tailored for your needs, [Brand Name] is your gateway to a smarter, more connected future."
-            }
-                    
-        `;
+## **Guidelines for Interaction:**
+1️⃣ **Brand Name Recognition**: If the user provides a brand name, acknowledge it and ask about their brand vision.
+2️⃣ **Clarification & Exploration**: If the user is unsure about their vision, ask **1-2 targeted questions** to understand their:
+   - **Target audience** (Who is this brand for?)
+   - **Core values & mission** (What problem does it solve? What impact does it aim to create?)
+3️⃣ **Brand Description Generation**: Based on the gathered information, generate a **compelling, 8-10 sentence brand description** that:
+   - Clearly communicates the brand’s purpose.
+   - Differentiates it from competitors.
+   - Uses a professional yet engaging tone.
+4️⃣ **Refinement & Feedback**: If the user requests changes, refine the description based on their feedback. Ask **specific questions** if needed to make it more aligned with their vision.
+5️⃣ **Finalization**: If you feel the brand description is complete and no further refinement is needed, confirm with the user that this is their final version and **return the finalized brand description**.
+
+### **Response Format When Finalized:**
+{
+  "finalized": true,
+  "brandDescription": "[Final Brand Description]"
+}
+If not finalized yet, continue guiding the user through improvements.
+`;
 
         const chatResponse = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
@@ -36,20 +43,21 @@ Follow this process:
 
         const aiMessage = chatResponse.choices[0]?.message?.content?.trim() || "";
 
-        // Extract finalized brand description if confirmed
-        const brandDescriptionMatch = aiMessage.match(/"brandDescription":\s*"(.+?)"/);
-        const refinedBrandDescription = brandDescriptionMatch ? brandDescriptionMatch[1] : null;
+        // Check if AI considers the brand description finalized
+        const finalMatch = aiMessage.match(/"finalized":\s*true,\s*"brandDescription":\s*"(.+?)"/);
+        const finalizedBrandDescription = finalMatch ? finalMatch[1] : null;
 
         return Response.json({
-            response: refinedBrandDescription
-                ? ` Your brand description: **${refinedBrandDescription}**`
-                : `${aiMessage} `,
-            brandDescription: refinedBrandDescription || null,
-            finalized: !!refinedBrandDescription,
+            response: finalizedBrandDescription ? "Your brand description is ready!" : aiMessage,
+            brandDescription: finalizedBrandDescription || null,
+            finalized: !!finalizedBrandDescription,
         });
 
     } catch (error) {
         console.error("Error:", error);
-        return Response.json({ response: "Oops! Something went wrong. Try again and let's perfect your brand! ", brandDescription: null }, { status: 500 });
+        return Response.json(
+            { response: "Oops! Something went wrong. Try again and let's perfect your brand!", brandDescription: null },
+            { status: 500 }
+        );
     }
 }
