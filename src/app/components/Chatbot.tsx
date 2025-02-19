@@ -325,120 +325,135 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
   // },[])
   const submitToAPI = async (brandName: string, description: string): Promise<void> => {
     const data = {
-      brandName: brandName,
+      brandName,
       brandDescription: description,
     };
   
     try {
-      console.log(data);
+      console.log("Submitting data:", data);
   
       // Initialize response state with empty values
-      setResponses((prev) => ({ ...prev, brandResult: "", coverImage: "",  highlightSections: {}, subscriptionPlans: {} }));
+      setResponses((prev) => ({
+        ...prev,
+        brandResult: "",
+        coverImage: "",
+        highlightSections: {},
+        subscriptionPlans: {},
+      }));
   
-      // First API call for brand analysis
-      const brandRes = await fetch("/api/brandDescription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      // First API call - Brand Analysis
+      try {
+        const brandRes = await fetch("/api/brandDescription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
   
-      if (!brandRes.ok) {
-        console.error("Failed to submit brand analysis", brandRes.status);
+        if (!brandRes.ok) throw new Error(`Brand Analysis Failed: ${brandRes.status}`);
+  
+        const brandResult = await brandRes.json();
+        console.log("Brand analysis result:", brandResult);
+  
+        setResponses((prev) => ({ ...prev, brandResult }));
+      } catch (error) {
+        console.error(error);
         return;
       }
   
-      const brandResult = await brandRes.json();
-      console.log("Brand analysis result:", brandResult);
+      // Second API call - Image Generation
+      let coverImage = "";
+      let ImageLink2 = "";
+      try {
+        const imageRes = await fetch("/api/generateImages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
   
-      setResponses((prev) => ({ ...prev, brandResult }));
+        if (!imageRes.ok) throw new Error(`Image Generation Failed: ${imageRes.status}`);
   
-      // Second API call for image generation
-      const IamgeRes = await fetch("/api/generateImages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+        const imageResult = await imageRes.json();
+        console.log("Image generation result:", imageResult);
   
-      if (!IamgeRes.ok) {
-        console.error("Failed to generate images", IamgeRes.status);
+        coverImage = imageResult?.results[0]?.urls?.full;
+        ImageLink2 = imageResult?.results[1]?.urls?.small;
+  
+        console.log("Image1:", coverImage, "\nImage2:", ImageLink2);
+  
+        setResponses((prev) => ({ ...prev, coverImage }));
+      } catch (error) {
+        console.error(error);
         return;
       }
   
-      const imageResult = await IamgeRes.json();
-      console.log(imageResult);
+      // Third API call - AI-generated Image (Commented Out)
+      // try {
+      //   const aiGeneratedData = { brandDescription: description };
+      //   const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(aiGeneratedData),
+      //   });
   
-      const coverImage = imageResult?.results[0]?.urls?.full;
-      const ImageLink2 = imageResult?.results[1]?.urls?.small;
-      
-      console.log("Image1", coverImage, "\n", "Image2", ImageLink2);
+      //   if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
   
-      setResponses((prev) => ({ ...prev, coverImage }));
+      //   const aiImageResult = await aiGeneratedImageRes.json();
+      //   console.log("AI Image:", aiImageResult?.imageUrl);
   
-      // Third API call for AI-generated image
-      const aiGeneratedData = { brandDescription: description };
-  
-      // const AIGeneratedImage = await fetch("/api/generateAiImages", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(aiGeneratedData),
-      // });
-  
-      // if (!AIGeneratedImage.ok) {
-      //   console.error("Failed to generate AI image", AIGeneratedImage.status);
+      //   setResponses((prev) => ({ ...prev, aiGeneratedImage: aiImageResult?.imageUrl }));
+      // } catch (error) {
+      //   console.error(error);
       //   return;
       // }
   
-      // const aiImge = await AIGeneratedImage.json();
-      // console.log("AI Image", aiImge?.imageUrl);
-      // const aiGeneratedImage = aiImge?.imageUrl;
+      // Fourth API call - Image & Text Combination
+      try {
+        const textRes = await fetch("/api/imageandText", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
   
-      // setResponses((prev) => ({ ...prev, aiGeneratedImage }));
+        if (!textRes.ok) throw new Error(`Image & Text Combination Failed: ${textRes.status}`);
   
-      // Fourth API call for image and text combination
-      const TextLower = await fetch("/api/imageandText", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+        const imageTextResult = await textRes.json();
+        console.log("Image and text result:", imageTextResult);
   
-      if (!TextLower.ok) {
-        console.error("Failed to combine image and text", TextLower.status);
+        const highlightSections = JSON.parse(imageTextResult.response);
+        highlightSections["Coverage Section"]["Image"] =
+          "https://d1u66su0w2odo1.cloudfront.net/common-mvno/best_network_image/flight_mobile_network_coverage.png";
+        highlightSections["Phone Compatibility Section"]["Image"] = ImageLink2;
+  
+        setResponses((prev) => ({ ...prev, highlightSections }));
+      } catch (error) {
+        console.error(error);
         return;
       }
   
-      const imageTextResult = await TextLower.json();
-      console.log("Image and text result:", imageTextResult);
+      // Fifth API call - Plan Generation
+      try {
+        const plansRes = await fetch("/api/planGenerator", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
   
-      const highlightSections = JSON.parse(imageTextResult.response);
-      highlightSections["Coverage Section"]["Image"] =
-        "https://d1u66su0w2odo1.cloudfront.net/common-mvno/best_network_image/flight_mobile_network_coverage.png";
-      highlightSections["Phone Compatibility Section"]["Image"] = ImageLink2;
+        if (!plansRes.ok) throw new Error(`Plan Generation Failed: ${plansRes.status}`);
   
-      setResponses((prev) => ({ ...prev, highlightSections }));
+        const subscriptionPlans = await plansRes.json();
+        console.log("Plans generation result:", subscriptionPlans);
   
-      // Fifth API call for plan generation
-      const plansRes = await fetch("/api/planGenerator", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-  
-      if (!plansRes.ok) {
-        console.error("Failed to generate plans", plansRes.status);
+        setResponses((prev) => ({ ...prev, subscriptionPlans }));
+      } catch (error) {
+        console.error(error);
         return;
       }
-  
-      const subscriptionPlans = await plansRes.json();
-      console.log("Plans generation result:", subscriptionPlans);
-  
-      setResponses((prev) => ({ ...prev, subscriptionPlans }));
-  
     } catch (error) {
       console.error("Error during brand analysis submission:", error);
       setMessages((prev) => [...prev, { text: "Error submitting data", sender: "bot" }]);
     }
   };
-
+  
   const startListening = () => {
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
       alert("Speech Recognition is not supported in your browser.");
