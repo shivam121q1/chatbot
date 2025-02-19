@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Polly, SynthesizeSpeechCommand, OutputFormat, VoiceId } from "@aws-sdk/client-polly";
+import { Polly, SynthesizeSpeechCommand, OutputFormat, VoiceId, Engine, SynthesizeSpeechCommandInput } from "@aws-sdk/client-polly";
 import { Readable } from "stream";
 
 // Initialize Polly client using AWS SDK v3
@@ -19,10 +19,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Text is required" }, { status: 400 });
     }
 
-    const params = {
+    const params: SynthesizeSpeechCommandInput = {
+      Engine: "neural", // Polly Neural Engine for better voice quality
       Text: text,
-      OutputFormat: OutputFormat.MP3, // Use OutputFormat.MP3 instead of a string
-      VoiceId: "Joanna" as VoiceId, // You can change this to any available voice in AWS Polly
+      OutputFormat: "mp3",
+      VoiceId: "Joanna", // Change to other voices if needed
     };
 
     // Requesting speech synthesis from AWS Polly (AWS SDK v3 way)

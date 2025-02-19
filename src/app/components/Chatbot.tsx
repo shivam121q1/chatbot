@@ -323,6 +323,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     }
     setIsInteracting(true);
     SpeechRecognition.startListening({ continuous: false, language: "en-US" });
+    
   };
 
   return (
