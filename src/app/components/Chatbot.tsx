@@ -210,7 +210,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       console.log(data);
   
       // Initialize response state with empty values
-      setResponses((prev) => ({ ...prev, brandResult: "", coverImage: "", aiGeneratedImage: "", highlightSections: {}, subscriptionPlans: {} }));
+      setResponses((prev) => ({ ...prev, brandResult: "", coverImage: "",  highlightSections: {}, subscriptionPlans: {} }));
   
       // First API call for brand analysis
       const brandRes = await fetch("/api/brandDescription", {

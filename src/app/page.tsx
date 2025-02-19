@@ -80,14 +80,14 @@ export default function Home() {
           <pre className="bg-gray-100 p-4 rounded-md shadow text-sm text-gray-700">
             {JSON.stringify(responses, null, 2)}
           </pre>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
+          {/* {error && <p className="text-red-500 mt-2">{error}</p>}
           <button
             onClick={generateLandingPage}
             disabled={loading}
             className={`mt-4 p-2 text-white rounded-md ${loading ? "bg-gray-500" : "bg-blue-500"}`}
           >
             {loading ? "Generating..." : "Generate Landing Page"}
-          </button>
+          </button> */}
         </div>
       )}
     </div>
