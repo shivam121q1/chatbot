@@ -70,9 +70,11 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     "sk_781188f627a6c170af626f90c3f7dc7a9328679807265a18",
     "sk_c3fc4ac3c0502b47ae0edad7b6e053cd947febb2d83594a4",
     "sk_8f0256e8c66c763e581dc675d0bc2c45e1afc1d54a974900",
-    "sk_07fc0d680733976cd4503874c5890d453da9484c70a9255f"
+    "sk_07fc0d680733976cd4503874c5890d453da9484c70a9255f",
+    "sk_ce3a84c30d0da0b0f65d2132659fa9f08b1db22694a571a1",
+    "sk_181e70ba67716a87dece630f3ef8da6661ce13a6fcb607e5"
   ]
-  const getRandomNumber = () => Math.floor(Math.random() * 4);
+  const getRandomNumber = () => Math.floor(Math.random() * 6);
   
 
   // const speak = useCallback(async (text: string) => {
