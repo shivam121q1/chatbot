@@ -56,7 +56,8 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [brandName, setBrandName] = useState("");
   const [description,setDescription] = useState("");
-
+  const [loader,setLoader]= useState(false);
+ const [startButton,setStartButton] = useState(false);
   const { transcript, listening, resetTranscript } = useSpeechRecognition();
   
 
@@ -89,7 +90,10 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
           audio.onplay = () => setIsInteracting(true); // Lock interaction when audio plays
           audio.onended = () => {
             setIsInteracting(false); // Unlock interaction when audio finishes
-            startListening(); // Optionally start listening again after the speech ends
+            if(steps.length-1 !==currentStep){
+
+              startListening(); // Optionally start listening again after the speech ends
+            }
           };
   
           audio.play(); // Start playing the generated audio
@@ -111,15 +115,18 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       return;
     }
 
-    if (steps.length > 0 && isClient) {
-      // Only run when mounted on the client side
-      speak(steps[0].question);
-      setMessages([{  text: steps[0].question,sender:"bot" }]);
+    if (startButton) {
+      if (steps.length > 0 && isClient) {
+        // Only run when mounted on the client side
+        speak(steps[0].question);
+        setMessages([{ text: steps[0].question, sender: "bot" }]);
+      }
     }
-  }, [speak, isClient]);
+  }, [speak, isClient,startButton]);
 
   useEffect(() => {
     if (!listening && transcript) {
+      
       handleAnswer(transcript);
     }
   }, [transcript, listening]);
@@ -140,7 +147,9 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
 
       const data = await res.json();
       setMessages([...newMessages, { text: data.response, sender: "bot" }]);
-      speak(data.response);
+      if(!data?.brandDescription){
+        speak(data.response);
+      }
       if(data?.brandName){
          await delay(6000);
          setBrandName(data?.brandName);
@@ -161,9 +170,10 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       }else if(data?.brandDescription){
         setDescription(data?.brandDescription);
           console.log("Calling brandAnalysis API...");
-          console.log(brandName,data?.brandDescription)
+          console.log(brandName,data?.brandDescription);
+          setLoader(true);
         await submitToAPI(brandName,data?.brandDescription);
-       
+       setLoader(false);
 
         setIsInteracting(false);
       }
@@ -197,6 +207,10 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       setIsValidating(false);
     }
   };
+
+  // useEffect(()=>{
+  //   submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
+  // },[])
  const submitToAPI = async (brandName: string, description: string): Promise<void> => {
   const data = {
     brandName: brandName,
@@ -227,15 +241,36 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-
+ console.log("Images of Singer" ,IamgeRes )
+  
     if (!IamgeRes.ok) {
       console.error("Failed to generate images", IamgeRes.status);
       return;
     }
 
-    const imageResult = await IamgeRes.json(); // Store the result from image generation if needed
-    console.log("Image generation result:", imageResult);
+    const imageResult = await IamgeRes.json();
 
+     // Store the result from image generation if needed
+     console.log(imageResult)
+     const coverImage = imageResult?.results[0]?.urls?.full;
+     const ImageLink2 =imageResult?.results[1]?.urls?.small;
+ console.log("Image1",coverImage,"\n","Image2",ImageLink2)
+
+    console.log("Image generation result:", coverImage);
+    const aiGeneratedData = {
+      brandDescription:description
+
+    };
+
+    const AIGeneratedImage = await fetch("/api/generateAiImages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(aiGeneratedData),
+    });
+    
+    const aiImge =await AIGeneratedImage.json();
+    console.log("Ai Image",aiImge?.imageUrl)
+    const aiGeneratedImage = aiImge?.imageUrl;
     // Third API call for image and text combination
     const TextLower = await fetch("/api/imageandText", {
       method: "POST",
@@ -251,8 +286,10 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
 
     const imageTextResult = await TextLower.json(); // Store the result of image and text
     console.log("Image and text result:", imageTextResult);
-    const cleanResponse = JSON.parse(imageTextResult.response);
-    console.log(cleanResponse)
+    const highlightSections = JSON.parse(imageTextResult.response);
+    console.log(highlightSections)
+    highlightSections["Coverage Section"]["Image"] = "https://d1u66su0w2odo1.cloudfront.net/common-mvno/best_network_image/flight_mobile_network_coverage.png";
+highlightSections["Phone Compatibility Section"]["Image"] = ImageLink2
 
     // Fourth API call for plan generation
     const plansRes = await fetch("/api/planGenerator", {
@@ -266,17 +303,19 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       return;
     }
 
-    const subPlans = await plansRes.json();
-    console.log("Plans generation result:", subPlans);
+    const subscriptionPlans = await plansRes.json();
+    console.log("Plans generation result:", subscriptionPlans);
 
     // Combine all the results into one object and store in state
     setResponses((prev) => {
       const finalData = {
         ...prev,
         brandResult,     // Store brandResult
-        subPlans,        // Store subPlans
-        imageResult,     // Optionally store image result
-        cleanResponse, // Optionally store image + text result
+        subscriptionPlans,        // Store subPlans
+        coverImage,
+            // Optionally store image result
+        aiGeneratedImage,
+        highlightSections, // Optionally store image + text result
       };
       return finalData;
     });
@@ -308,7 +347,8 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
             : "opacity-100"
         }`}
       >
-        <AnimatePresence>
+        {/* Changes for UI */}
+        {messages.length === 0 ? (<div className="flex justify-center items-center"><button onClick={()=>setStartButton(true)} className=" mt-10 border-white border px-2 py-1 text-white"> Let's Start the conversation</button></div>):(<AnimatePresence>
           {messages.map((msg, idx) => (
             <motion.div
               key={idx}
@@ -325,29 +365,30 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
             </motion.div>
           ))}
           {!isInteracting && currentStep === steps.length - 1 && (
-            <div className="flex justify-center">
+            <div className="flex justify-center flex-col gap-2 my-2">
 
             <ChooseColorPage brandName={brandName} setResponse={setResponses}/>
-            <button  onClick={()=>{onComplete(responses)}}>Finish</button>
+            <button className="border-white border px-2 py-1 text-black bg-white mt-2 "  onClick={()=>{onComplete(responses)}}>Click to show the final response</button>
             {isValidating}
             </div>
           )}
-        </AnimatePresence>
+        </AnimatePresence>)} 
+        
       </main>
 
       {isInteracting && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-80 z-10">
-          {brandName }
+          {/* {brandName } */}
           <motion.div
-            className="w-32 h-32 bg-white rounded-full opacity-50"
+            className="w-32 h-32 mb-2 bg-white rounded-full opacity-50"
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
           />
           {transcript}
           <p className="text-white text-lg mt-4">
-            {listening ? "Listening..." : "Tap to Start Mic"}
+           {loader ? "Processing the input. Please wait for the final step" : listening ? "Listening..." : "Tap to Start Mic"}
           </p>
-          {description}
+          {/* {description} */}
           {!listening && (
             <Button
               onClick={startListening}
@@ -365,7 +406,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
         </div>
       )}
 
-      {!isInteracting && (
+      {/* {!isInteracting  && (currentStep === steps.length-1  ?(
         <footer className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20">
           <Button
             onClick={startListening}
@@ -375,7 +416,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
           </Button>
           <p className="text-center text-gray-400 mt-2 text-sm">Tap to Speak</p>
         </footer>
-      )}
+      ))} */}
     </div>
   );
 }

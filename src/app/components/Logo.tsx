@@ -135,10 +135,10 @@ const ChooseColorPage = ({brandName,setResponse}:ChooseColorProps) => {
     }
   };
   return (
-    <div className="max-w-maxContent w-11/12 mx-auto flex flex-col gap-10">
+    <div className="max-w-maxContent w-11/12 mx-auto flex flex-col gap-10  items-center">
         
       <div className="flex flex-col gap-8">
-        <h1 className="text-4xl font-bold">Showcase your brand mark</h1>
+        <h1 className="text-4xl font-bold">Final step: Showcase your brand mark</h1>
         <div className="flex gap-8 items-center">
           <Button
             className="bg-[#F2F2F2] text-[#333333] hover:text-[#F2F2F2]"
@@ -166,22 +166,7 @@ const ChooseColorPage = ({brandName,setResponse}:ChooseColorProps) => {
 
       
 
-      <div className="flex items-center gap-2 justify-end">
-        <Button
-          asChild
-          variant="secondary"
-          className="bg-white text-primary border-2 border-primary"
-        >
-          <Link href="/setup/brand-story">Back</Link>
-        </Button>
-        <Button
-          variant="secondary"
-          className="bg-primary text-white  hover:bg-accent hover:border-2"
-          asChild
-        >
-          <Link href="/setup/contact">Next</Link>
-        </Button>
-      </div>
+    
 
       {/* Dialog for file upload */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -259,7 +244,7 @@ const ChooseColorPage = ({brandName,setResponse}:ChooseColorProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     {fontVariable.map((item,index)=>(
-                    <SelectItem key={index} value={item}>{item}</SelectItem>
+                    <SelectItem key={index} value={item}>{item.replaceAll("_", " ").replaceAll("-"," ").replaceAll(".ttf","")}</SelectItem>
 
                     ))}
                   </SelectContent>

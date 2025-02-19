@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
                 {
                     role: "system",
                     content: `You are an AI that determines if a brand name is widely recognized or not.
-                    Respond with "Yes" if the brand name is popular.
+                    Respond with "Yes" if the brand name is popular brand.
                     Respond with "No" if the brand name is not popular.`
                 },
                 { role: "user", content: `Brand Name: ${brandName}` },
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
                 {
                     role: "system",
                     content: `You are an AI that analyzes a brand description and determines the industry it belongs to.
-                    Provide one  keyword that define the industry just give the word .`
+                    Provide one keyword that define the industry just give the word .`
                 },
                 { role: "user", content: `Brand Description: ${brandDescription}` },
             ],
@@ -65,7 +65,8 @@ export async function POST(req: NextRequest) {
         }
         
         try {
-            const response = await axios.get(`https://www.googleapis.com/customsearch/v1?q=${searchWord}&cx=5579b9f0f0c554a5b&key=AIzaSyCxKzgwhrzwCaK2jNfZTps7Wll86Kqso1M&searchType=image&imgSize=xlarge&imgType=photo`);
+            console.log( "api word",searchWord)
+            const response = await axios.get(`https://api.unsplash.com/search/photos?per_page=2&client_id=aGyXb1MWqLJG5LRKnhuLNkEWCoNmR-79I5mMX2pTGsU&query=${searchWord}\ header\ image`);
             
             // Extract just the data from the response to avoid circular structure
             const cleanData = removeCircularReferences(response.data);

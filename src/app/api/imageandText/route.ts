@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
                     Format your response in json fomrat as follows:
                     
                     Coverage Section:
-                    Title: Craft a compelling headline emphasizing the brand’s coverage, connectivity, or reliability..( Give Max 60 characters)
+                    Title: Craft a compelling headline emphasizing the brand’s coverage, connectivity, or reliability..( Give Max 60 characters }
                     Subtitle: Provide a short, engaging description highlighting seamless service, accessibility, and coverage benefits.(Max 120 characters)
                     
                     Phone Compatibility Sectio:
@@ -34,12 +34,12 @@ export async function POST(req: NextRequest) {
                     Example json Output for "Flight Mobile":
                     {
                     Coverage Section:{
-                    Title: Unbeatable 4G and 5G coverage across America (45 characters)
-                    Subtitle: Stay connected with seamless coast-to-coast service no matter where you are. (98 characters)
+                    Title: Unbeatable 4G and 5G coverage across America 
+                    Subtitle: Stay connected with seamless coast-to-coast service no matter where you are.
                       } 
                     Phone Compatibility Section:{   
-                    Title: Love your phone and digits? Bring 'em along! (45 characters)
-                    Subtitle: Your number and phone can make the switch to Flight Mobile too. Let's make sure your device is unlocked and network-compatible. (118 characters)}
+                    Title: Love your phone and digits? Bring 'em along! 
+                    Subtitle: Your number and phone can make the switch to Flight Mobile too. Let's make sure your device is unlocked and network-compatible.}
                 }`
                 },
                 { role: "user", content: `Brand Name: ${brandName}\nDescription: ${brandDescription}` },

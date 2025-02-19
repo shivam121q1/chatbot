@@ -19,6 +19,7 @@
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
+    "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.3",
     "lucide-react": "^0.475.0",
