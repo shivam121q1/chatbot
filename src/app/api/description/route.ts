@@ -27,7 +27,7 @@ Summarize the user’s choices in a short sentence:
 If the user agrees, proceed to step 4.
 
 4️⃣ **Finalize & Return JSON Response**
-Once confirmed, generate a **concise and engaging brand description** (5-6 sentences).
+Once confirmed, generate a **concise and engaging brand description** (2-3 sentences).
 Do **not read the full description aloud**. Instead, return it in this format:
   {"finalized": true, "brandDescription": "[Final Brand Description]"}
 If the user requests refinements, adjust accordingly and confirm again.
