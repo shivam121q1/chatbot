@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
         return Response.json({
             response: refinedBrandName
-                ? ` Your perfect brand name is **${refinedBrandName}**!  It's unique, powerful, and ready for success.`
+                ? ` Your perfect brand name is ${refinedBrandName}!  It's unique, powerful, and ready for success.`
                 : `${aiMessage} `,
             brandName: refinedBrandName || null,
             finalized: !!refinedBrandName,

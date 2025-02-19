@@ -60,49 +60,170 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
   const [loader, setLoader] = useState(false);
   const [startButton, setStartButton] = useState(false);
   const { transcript, listening, resetTranscript } = useSpeechRecognition();
-
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isClient, setIsClient] = useState(false); // Track if component is mounted on the client
 
   useEffect(() => {
     setIsClient(true); // Set isClient to true after mounting on the client
   }, []);
+  const apiKeys = [
+    "sk_781188f627a6c170af626f90c3f7dc7a9328679807265a18",
+    "sk_c3fc4ac3c0502b47ae0edad7b6e053cd947febb2d83594a4",
+    "sk_8f0256e8c66c763e581dc675d0bc2c45e1afc1d54a974900",
+    "sk_07fc0d680733976cd4503874c5890d453da9484c70a9255f"
+  ]
+  const getRandomNumber = () => Math.floor(Math.random() * 4);
+  
 
+  // const speak = useCallback(async (text: string) => {
+    
+  //   setIsInteracting(true); // Disable interaction while speaking
+
+  //   try {
+  //     // Call the API to generate speech (your /api/audio endpoint)
+  //     const response = await fetch("/api/audio", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ text }),
+  //     });
+
+  //     if (response.ok) {
+  //       const audioBlob = await response.blob();
+  //       const audioUrl = URL.createObjectURL(audioBlob);
+  //       const audio = new Audio(audioUrl);
+
+  //       // Play the audio when it's ready
+  //       audio.onplay = () => setIsInteracting(true); // Lock interaction when audio plays
+  //       audio.onended = () => {
+  //         setIsInteracting(false); // Unlock interaction when audio finishes
+  //         if (steps.length - 1 !== currentStep) {
+  //           startListening(); // Optionally start listening again after the speech ends
+  //         }
+  //       };
+
+  //       audio.play(); // Start playing the generated audio
+  //     } else {
+  //       throw new Error("Failed to generate speech from API");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error generating speech:", error);
+  //     setIsInteracting(false); // Unlock interaction if there was an error
+  //   }
+  // }, []);
+  const waitUntilPlaying = async () => {
+    return new Promise<void>((resolve) => {
+      const checkPlaying = () => {
+        if (isPlaying) {
+          resolve(); // Resolve the promise when isPlaying is true
+        } else {
+          requestAnimationFrame(checkPlaying); // Keep checking
+        }
+      };
+      checkPlaying(); // Start checking
+    });
+  };
+  
   const speak = useCallback(async (text: string) => {
     setIsInteracting(true); // Disable interaction while speaking
-
+  
     try {
-      // Call the API to generate speech (your /api/audio endpoint)
-      const response = await fetch("/api/audio", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-
-        // Play the audio when it's ready
-        audio.onplay = () => setIsInteracting(true); // Lock interaction when audio plays
-        audio.onended = () => {
-          setIsInteracting(false); // Unlock interaction when audio finishes
-          if (steps.length - 1 !== currentStep) {
-            startListening(); // Optionally start listening again after the speech ends
-          }
-        };
-
-        audio.play(); // Start playing the generated audio
-      } else {
-        throw new Error("Failed to generate speech from API");
-      }
+      const number = getRandomNumber();
+      console.log(apiKeys);
+      const API_KEY = apiKeys[number]; // Select a random API key
+      const VOICE_ID = "iP95p4xoKVk53GoZ742B"; // Replace with a valid voice ID from Eleven Labs
+  
+      // Call Eleven Labs API via the backend
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "xi-api-key": API_KEY,
+              },
+              body: JSON.stringify({
+                text: text,
+                voice_settings: {
+                  stability: 0.5,
+                  similarity_boost: 0.5,
+                },
+              }),
+            });
+  
+      if (!response.ok) throw new Error("Failed to generate speech from API");
+  
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+  
+      // Handle playback
+      audio.onplay = () => setIsInteracting(true); // Lock interaction when audio plays
+      audio.onended = () => {
+        setIsInteracting(false); // Unlock interaction when audio finishes
+        if (steps.length - 1 !== currentStep) {
+          startListening(); // Resume listening after speech ends
+        }
+      };
+  
+      audio.play(); // Start playing the generated audio
     } catch (error) {
       console.error("Error generating speech:", error);
-      setIsInteracting(false); // Unlock interaction if there was an error
+      setIsInteracting(false); // Unlock interaction if an error occurs
     }
   }, []);
+  // const speak = useCallback(async (text: string) => {
+  //   setIsInteracting(true); // Disable interaction while speaking
+  
+  //   try {
+  //     const number = getRandomNumber();
+  //     console.log(apiKeys);
+  //     const API_KEY = apiKeys[number]; // Select a random API key
+  //     const VOICE_ID = "iP95p4xoKVk53GoZ742B"; // Replace with a valid voice ID from Eleven Labs
+  
+  //     // Call Eleven Labs API via the backend
+  //     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "xi-api-key": API_KEY,
+  //       },
+  //       body: JSON.stringify({
+  //         text: text,
+  //         voice_settings: {
+  //           stability: 0.5,
+  //           similarity_boost: 0.5,
+  //         },
+  //       }),
+  //     });
+  
+  //     if (!response.ok) throw new Error("Failed to generate speech from API");
+  
+  //     const audioBlob = await response.blob();
+  //     const audioUrl = URL.createObjectURL(audioBlob);
+  //     const audio = new Audio(audioUrl);
+  
+  //     // Handle playback
+  //     audio.onplay = () => {
+  //       setIsInteracting(true); // Lock interaction when audio plays
+  //       setIsPlaying(true); // Set playing state to true
+  //     };
+  
+  //     audio.onended = () => {
+  //       setIsInteracting(false); // Unlock interaction when audio finishes
+  //       setIsPlaying(false); // Set playing state to false
+  
+  //       if (steps.length - 1 !== currentStep) {
+  //         startListening(); // Resume listening after speech ends
+  //       }
+  //     };
+  
+  //     audio.play(); // Start playing the generated audio
+  //   } catch (error) {
+  //     console.error("Error generating speech:", error);
+  //     setIsInteracting(false); // Unlock interaction if an error occurs
+  //     setIsPlaying(false); // Ensure playing state is false on error
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
@@ -149,8 +270,8 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
         speak(data.response);
       }
       if (data?.brandName) {
-        await delay(6000);
         setBrandName(data?.brandName);
+          await delay(8000);
         if (currentStep < steps.length - 1) {
           const nextStep = currentStep + 1;
           setCurrentStep(nextStep);
