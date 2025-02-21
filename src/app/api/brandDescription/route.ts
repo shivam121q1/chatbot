@@ -69,6 +69,14 @@ export async function POST(req: Request) {
       responseText = responseText.replace(/^```json\s*/g, "").replace(/\s*```$/g, "");
     }
 
+    // Further cleanup using Regular Expression
+    responseText = responseText
+      .replace(/^[^{]*/, "") // Remove any text before the first `{`
+      .replace(/[^}]*$/, ""); // Remove any text after the last `}`
+
+    // Log the cleaned response for debugging
+    console.log("Cleaned OpenAI response:", responseText);
+
     // Attempt to parse the cleaned JSON response
     let parsedData;
     try {
@@ -91,8 +99,8 @@ export async function POST(req: Request) {
     // Return only required fields
     return NextResponse.json({
       result: {
-        brandName:brandName,
-        brandDescription:brandDescription,
+        brandName: brandName,
+        brandDescription: brandDescription,
         tagline: parsedData.tagline,
         keywords: parsedData.keywords,
         websiteUrl: parsedData.websiteUrl,

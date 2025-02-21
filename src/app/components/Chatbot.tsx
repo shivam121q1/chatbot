@@ -320,9 +320,9 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     }
   };
 
-  // useEffect(()=>{
-  //   submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
-  // },[])
+  useEffect(()=>{
+    submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
+  },[])
   const submitToAPI = async (brandName: string, description: string): Promise<void> => {
     const data = {
       brandName,
@@ -387,24 +387,24 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       }
   
       // Third API call - AI-generated Image (Commented Out)
-      // try {
-      //   const aiGeneratedData = { brandDescription: description };
-      //   const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify(aiGeneratedData),
-      //   });
+      try {
+        const aiGeneratedData = { brandDescription: description };
+        const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(aiGeneratedData),
+        });
   
-      //   if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
+        if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
   
-      //   const aiImageResult = await aiGeneratedImageRes.json();
-      //   console.log("AI Image:", aiImageResult?.imageUrl);
+        const aiImageResult = await aiGeneratedImageRes.json();
+        console.log("AI Image:", aiImageResult?.imageUrl);
   
-      //   setResponses((prev) => ({ ...prev, aiGeneratedImage: aiImageResult?.imageUrl }));
-      // } catch (error) {
-      //   console.error(error);
-      //   return;
-      // }
+        setResponses((prev) => ({ ...prev, aiGeneratedImage: aiImageResult?.imageUrl }));
+      } catch (error) {
+        console.error(error);
+        return;
+      }
   
       // Fourth API call - Image & Text Combination
       try {
