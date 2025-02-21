@@ -387,24 +387,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       }
   
       // Third API call - AI-generated Image (Commented Out)
-      try {
-        const aiGeneratedData = { brandDescription: description };
-        const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(aiGeneratedData),
-        });
-  
-        if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
-  
-        const aiImageResult = await aiGeneratedImageRes.json();
-        console.log("AI Image:", aiImageResult?.imageUrl);
-  
-        setResponses((prev) => ({ ...prev, aiGeneratedImage: aiImageResult?.imageUrl }));
-      } catch (error) {
-        console.error(error);
-        return;
-      }
+      
   
       // Fourth API call - Image & Text Combination
       try {
@@ -451,6 +434,26 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     } catch (error) {
       console.error("Error during brand analysis submission:", error);
       setMessages((prev) => [...prev, { text: "Error submitting data", sender: "bot" }]);
+    }
+
+    //Ai genrated Images
+    try {
+      const aiGeneratedData = { brandDescription: description };
+      const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aiGeneratedData),
+      });
+
+      if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
+
+      const aiImageResult = await aiGeneratedImageRes.json();
+      console.log("AI Image:", aiImageResult?.imageUrl);
+
+      setResponses((prev) => ({ ...prev, aiGeneratedImage: aiImageResult?.imageUrl }));
+    } catch (error) {
+      console.error(error);
+      return;
     }
   };
   
