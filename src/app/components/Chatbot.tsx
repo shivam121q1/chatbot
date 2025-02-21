@@ -320,9 +320,9 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     }
   };
 
-  useEffect(()=>{
-    submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
-  },[])
+  // useEffect(()=>{
+  //   submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
+  // },[])
   const submitToAPI = async (brandName: string, description: string): Promise<void> => {
     const data = {
       brandName,
