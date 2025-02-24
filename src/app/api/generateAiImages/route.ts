@@ -5,35 +5,61 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Helper function to delay requests
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function POST(req: NextRequest) {
   try {
-    const { brandDescription } = await req.json();
+    const { brandName, brandDescription } = await req.json();
 
-    if (!brandDescription) {
-      return NextResponse.json({ error: "brandDescription is required" }, { status: 400 });
+    if (!brandName || !brandDescription) {
+      return NextResponse.json({ error: "brandName and brandDescription are required" }, { status: 400 });
     }
 
-    // Generate a detailed prompt for DALL·E
-    const prompt = `A modern and professional banner image for a company. The theme should represent: ${brandDescription}. The style should be clean, high-tech, and visually appealing.`;
+    // Define image prompts
+    const prompts = [
+      `A professional and inviting hero section image for ${brandName}, an MVNO provider. The image should showcase affordability, seamless mobile connectivity, and customer trust. No futuristic effects or abstract visuals.`,
+      `A realistic image representing strong network coverage for ${brandName}. Show people using mobile phones in different locations—urban, suburban, and rural—to emphasize reliable connectivity.`,
+      `A welcoming image for phone compatibility, showing people happily using their own phones after switching to ${brandName}. Emphasize an easy transition and keeping their number.`,
+    ];
 
-    // Call OpenAI DALL·E API
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt,
-      n: 1,
-      size: "1024x1024",
-    });
+    let imageUrls: (string | null)[] = [];
 
-    // Get the image URL
-    const imageUrl = response.data[0]?.url;
-    if (!imageUrl) {
-      return NextResponse.json({ error: "Failed to generate image" }, { status: 500 });
+    // Generate images one by one with a delay to prevent rate limit issues
+    for (const prompt of prompts) {
+      try {
+        const response = await openai.images.generate({
+          model: "dall-e-3",
+          prompt,
+          n: 1,
+          size: "1024x1024",
+        });
+
+        imageUrls.push(response.data[0]?.url || null);
+      } catch (error) {
+        console.error("Error generating image:", error);
+        imageUrls.push(null); // Push null if the request fails
+      }
+
+      // Delay 12 seconds between requests to stay within OpenAI's rate limit (5/min)
+      await delay(12000);
     }
 
-    return NextResponse.json({ imageUrl }, { status: 200 });
+    // Check if all images were successfully generated
+    if (imageUrls.some((url) => !url)) {
+      return NextResponse.json({ error: "Some images failed to generate due to rate limits." }, { status: 429 });
+    }
+
+    return NextResponse.json({
+      heroImage: imageUrls[0],
+      highlightImages: {
+        coverageImage: imageUrls[1],
+        phoneCompatibilityImage: imageUrls[2],
+      }
+    }, { status: 200 });
 
   } catch (error) {
-    console.log(error)
-    return NextResponse.json( { status: 500 });
+    console.error("Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

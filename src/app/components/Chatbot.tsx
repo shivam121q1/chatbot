@@ -66,18 +66,8 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
   useEffect(() => {
     setIsClient(true); // Set isClient to true after mounting on the client
   }, []);
-  const apiKeys = [
-    "sk_781188f627a6c170af626f90c3f7dc7a9328679807265a18",
-    "sk_c3fc4ac3c0502b47ae0edad7b6e053cd947febb2d83594a4",
-    "sk_8f0256e8c66c763e581dc675d0bc2c45e1afc1d54a974900",
-    "sk_07fc0d680733976cd4503874c5890d453da9484c70a9255f",
-    "sk_ce3a84c30d0da0b0f65d2132659fa9f08b1db22694a571a1",
-    "sk_181e70ba67716a87dece630f3ef8da6661ce13a6fcb607e5",
-    "sk_a34d954f61e7b0c21828994928563ebf95ba4b2eca7cc9e9",
-    "sk_618fe0b9feb8ac0bcc2b105f9c1a524a13e4ef47273e5d16",
-    "sk_5df493b4178f51caacf5c9c56a5bf0f832184a09c7f04725"
-  ]
-  const getRandomNumber = () => Math.floor(Math.random() * 8);
+  
+  const getRandomNumber = () => Math.floor(Math.random() * 7);
   
 
   // const speak = useCallback(async (text: string) => {
@@ -134,9 +124,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
     setIsInteracting(true); // Disable interaction while speaking
   
     try {
-      const number = getRandomNumber();
-      console.log(apiKeys);
-      const API_KEY = apiKeys[number]; // Select a random API key
+     // Select a random API key
       const VOICE_ID = "iP95p4xoKVk53GoZ742B"; // Replace with a valid voice ID from Eleven Labs
   
       // Call Eleven Labs API via the backend
@@ -144,7 +132,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "xi-api-key": API_KEY,
+                "xi-api-key": "sk_3ddf30a5cb97b698dcb9cbfc2817306290658c9731875f71",
               },
               body: JSON.stringify({
                 text: text,
@@ -366,6 +354,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       // Second API call - Image Generation
       let coverImage = "";
       let ImageLink2 = "";
+      let ImageLink1="";
       try {
         const imageRes = await fetch("/api/generateImages", {
           method: "POST",
@@ -380,6 +369,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
   
         coverImage = imageResult?.results[0]?.urls?.full;
         ImageLink2 = imageResult?.results[1]?.urls?.small;
+        ImageLink1 = imageResult?.results[2]?.urls?.small;
   
         console.log("Image1:", coverImage, "\nImage2:", ImageLink2);
   
@@ -406,8 +396,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
         console.log("Image and text result:", imageTextResult);
   
         const highlightSections = JSON.parse(imageTextResult.response);
-        highlightSections["Coverage Section"]["Image"] =
-          "https://d1u66su0w2odo1.cloudfront.net/common-mvno/best_network_image/flight_mobile_network_coverage.png";
+        highlightSections["Coverage Section"]["Image"] =ImageLink1;
         highlightSections["Phone Compatibility Section"]["Image"] = ImageLink2;
   
         setResponses((prev) => ({ ...prev, highlightSections }));
@@ -439,25 +428,29 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       setMessages((prev) => [...prev, { text: "Error submitting data", sender: "bot" }]);
     }
 
-    //Ai genrated Images
-    try {
-      const aiGeneratedData = { brandDescription: description };
-      const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(aiGeneratedData),
-      });
-
-      if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
-
-      const aiImageResult = await aiGeneratedImageRes.json();
-      console.log("AI Image:", aiImageResult?.imageUrl);
-
-      setResponses((prev) => ({ ...prev, aiGeneratedImage: aiImageResult?.imageUrl }));
-    } catch (error) {
-      console.error(error);
-      return;
-    }
+    // try {
+    //   const aiGeneratedData = { brandName:brandName,brandDescription: description };
+    //   const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(aiGeneratedData),
+    //   });
+    
+    //   if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
+    
+    //   const aiImageResult = await aiGeneratedImageRes.json();
+    //   console.log("AI Images:", aiImageResult);
+    
+    //   setResponses((prev) => ({
+    //     ...prev,
+    //     aiGeneratedHeroImage: aiImageResult?.heroImage,
+    //     aiGeneratedCoverageImage: aiImageResult?.highlightImages?.coverageImage,
+    //     aiGeneratedPhoneCompatibilityImage: aiImageResult?.highlightImages?.phoneCompatibilityImage,
+    //   }));
+    // } catch (error) {
+    //   console.error(error);
+    // }
+    
   };
   
   const startListening = () => {

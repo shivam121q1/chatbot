@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         
         try {
             console.log( "api word",searchWord)
-            const response = await axios.get(`https://api.unsplash.com/search/photos?per_page=2&client_id=aGyXb1MWqLJG5LRKnhuLNkEWCoNmR-79I5mMX2pTGsU&query=${searchWord}`);
+            const response = await axios.get(`https://api.unsplash.com/search/photos?per_page=3&client_id=aGyXb1MWqLJG5LRKnhuLNkEWCoNmR-79I5mMX2pTGsU&query=${searchWord}`);
             
             // Extract just the data from the response to avoid circular structure
             const cleanData = removeCircularReferences(response.data);
