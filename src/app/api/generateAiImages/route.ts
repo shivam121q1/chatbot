@@ -6,7 +6,7 @@ const openai = new OpenAI({
 });
 
 // Helper function to delay requests
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,20 +19,20 @@ export async function POST(req: NextRequest) {
     // Define image prompts
     const prompts = [
       `A professional and inviting hero section image for ${brandName}, an MVNO provider. The image should showcase affordability, seamless mobile connectivity, and customer trust. No futuristic effects or abstract visuals.`,
-      `A realistic image representing strong network coverage for ${brandName}. Show people using mobile phones in different locations—urban, suburban, and rural—to emphasize reliable connectivity.`,
-      `A welcoming image for phone compatibility, showing people happily using their own phones after switching to ${brandName}. Emphasize an easy transition and keeping their number.`,
+      `A realistic image representing strong network coverage for ${brandName} and use the ${brandDescription} description for generating image. Show people using mobile phones in different locations—urban, suburban, and rural—to emphasize reliable connectivity.`,
+      `A welcoming image for phone compatibility, showing people happily using their own phones after switching to ${brandName} and use the brand description also ${brandDescription}. Emphasize an easy transition and keeping their number.`,
     ];
 
     let imageUrls: (string | null)[] = [];
 
     // Generate images one by one with a delay to prevent rate limit issues
-    for (const prompt of prompts) {
+    for (let i = 0; i < prompts.length; i++) {
       try {
         const response = await openai.images.generate({
           model: "dall-e-3",
-          prompt,
+          prompt: prompts[i],
           n: 1,
-          size: "1024x1024",
+          size: i === 0 ? "1024x1024" : "512x512", // 512x512 for the second and third images, 1024x1024 for the first
         });
 
         imageUrls.push(response.data[0]?.url || null);
@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       heroImage: imageUrls[0],
       highlightImages: {
-        coverageImage: imageUrls[1],
-        phoneCompatibilityImage: imageUrls[2],
+        coverageImage: imageUrls[1], // This will be the 512x512 image
+        phoneCompatibilityImage: imageUrls[2], // This will also be 512x512
       }
     }, { status: 200 });
 
