@@ -312,7 +312,7 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
   };
 
   // useEffect(()=>{
-  //   submitToAPI("Sunidhi Chauhan"," Sunidhi Chauhan: A global icon of melodious excellence and magnetic stage presence")
+  //   submitToAPI(" ConnectEase"," ConnectEase is a next-generation MVNO (Mobile Virtual Network Operator) committed to providing affordable, reliable, and seamless mobile connectivity. With nationwide coverage, easy phone compatibility, and no hidden fees, ConnectEase ensures that users stay connected without complications. Whether at home, work, or traveling, ConnectEase offers flexible plans tailored to modern communication needs.")
   // },[])
   const submitToAPI = async (brandName: string, description: string): Promise<void> => {
     const data = {
@@ -367,9 +367,9 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
         const imageResult = await imageRes.json();
         console.log("Image generation result:", imageResult);
   
-        coverImage = imageResult?.results[0]?.urls?.full;
-        ImageLink2 = imageResult?.results[1]?.urls?.small;
-        ImageLink1 = imageResult?.results[2]?.urls?.small;
+        coverImage = imageResult?.results[0]?.urls?.raw +"w=1440&h=500";
+        ImageLink2 = imageResult?.results[1]?.urls?.small +"w=530&h=352";
+        ImageLink1 = imageResult?.results[2]?.urls?.small +"w=530&h=352";
   
         console.log("Image1:", coverImage, "\nImage2:", ImageLink2);
   
@@ -428,28 +428,28 @@ export default function Chatbot({ onComplete }: ChatbotProps) {
       setMessages((prev) => [...prev, { text: "Error submitting data", sender: "bot" }]);
     }
 
-    // try {
-    //   const aiGeneratedData = { brandName:brandName,brandDescription: description };
-    //   const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(aiGeneratedData),
-    //   });
+    try {
+      const aiGeneratedData = { brandName:brandName,brandDescription: description };
+      const aiGeneratedImageRes = await fetch("/api/generateAiImages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aiGeneratedData),
+      });
     
-    //   if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
+      if (!aiGeneratedImageRes.ok) throw new Error(`AI Image Generation Failed: ${aiGeneratedImageRes.status}`);
     
-    //   const aiImageResult = await aiGeneratedImageRes.json();
-    //   console.log("AI Images:", aiImageResult);
+      const aiImageResult = await aiGeneratedImageRes.json();
+      console.log("AI Images:", aiImageResult);
     
-    //   setResponses((prev) => ({
-    //     ...prev,
-    //     aiGeneratedHeroImage: aiImageResult?.heroImage,
-    //     aiGeneratedCoverageImage: aiImageResult?.highlightImages?.coverageImage,
-    //     aiGeneratedPhoneCompatibilityImage: aiImageResult?.highlightImages?.phoneCompatibilityImage,
-    //   }));
-    // } catch (error) {
-    //   console.error(error);
-    // }
+      setResponses((prev) => ({
+        ...prev,
+        aiGeneratedHeroImage: aiImageResult?.heroImage,
+        aiGeneratedCoverageImage: aiImageResult?.highlightImages?.coverageImage,
+        aiGeneratedPhoneCompatibilityImage: aiImageResult?.highlightImages?.phoneCompatibilityImage,
+      }));
+    } catch (error) {
+      console.error(error);
+    }
     
   };
   
